@@ -17,7 +17,7 @@ public class MathGameViewer extends JFrame
 	public MathGameViewer()
 	{
 		setTitle("Math Game");
-		setSize(500, 500);
+		setSize(1920, 1080);
 		
 		BufferedImage image = null;
 		try

@@ -56,15 +56,9 @@ public class MathGamePanel extends JPanel
 	 */
 	public void startNewGame()
 	{
+		problemPanels = new ArrayList<MathProblemPanel>();
 		
-	}
-	/**
-	 * Starts a new game using the new base number.
-	 * @param baseNum The number to use in all the calculations.
-	 */
-	public void startNewGame(int baseNum)
-	{
-		setLayout(new GridLayout(size, size));
+		setLayout(new GridLayout(size, size, 0, 0));
 		
 		BufferedImage[] subImages = splitImage();
 		for (int i = 0; i < size * size; ++i)
@@ -75,13 +69,26 @@ public class MathGamePanel extends JPanel
 		}
 	}
 	/**
+	 * Starts a new game using the new base number.
+	 * @param baseNum The number to use in all the calculations.
+	 */
+	public void startNewGame(int baseNum)
+	{
+		this.baseNum = baseNum;
+		
+		startNewGame();
+	}
+	/**
 	 * Starts a new game using the new base number and size.
 	 * @param baseNum The number to use in all the calculations.
 	 * @param size The number of rows and columns to have (always the same).
 	 */
 	public void startNewGame(int baseNum, int size)
 	{
+		this.baseNum = baseNum;
+		this.size = size;
 		
+		startNewGame();
 	}
 	/**
 	 * Starts a new game using the new base number, size, and image.
@@ -91,7 +98,11 @@ public class MathGamePanel extends JPanel
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image)
 	{
+		this.baseNum = baseNum;
+		this.size = size;
+		this.image = image;
 		
+		startNewGame();
 	}
 	/**
 	 * Starts a new game using all new parameters.
@@ -102,26 +113,34 @@ public class MathGamePanel extends JPanel
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image, ProblemType type)
 	{
+		this.baseNum = baseNum;
+		this.size = size;
+		this.image = image;
+		this.type = type;
 		
+		startNewGame();
 	}
 	
 	private BufferedImage[] splitImage()
 	{
-		int width, height, startX, startY;
-		if (image.getWidth() < image.getHeight())
-		{
-			width = image.getWidth();
-			height = image.getWidth();
-			startX = 0;
-			startY = (image.getHeight() - image.getWidth()) / 2;
-		}
-		else
-		{
-			width = image.getHeight();
-			height = image.getHeight();
-			startX = (image.getWidth() - image.getHeight()) / 2;
-			startY = 0;
-		}
+		int width = image.getWidth();
+		int height = image.getHeight();
+		int startX = 0;
+		int startY = 0;
+//		if (image.getWidth() < image.getHeight())
+//		{
+//			width = image.getWidth();
+//			height = image.getWidth();
+//			startX = 0;
+//			startY = (image.getHeight() - image.getWidth()) / 2;
+//		}
+//		else
+//		{
+//			width = image.getHeight();
+//			height = image.getHeight();
+//			startX = (image.getWidth() - image.getHeight()) / 2;
+//			startY = 0;
+//		}
 		int subImageWidth = width / size;
 		int subImageHeight = height / size;
 		
