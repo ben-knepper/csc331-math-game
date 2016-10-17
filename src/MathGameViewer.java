@@ -1,6 +1,7 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -29,7 +30,13 @@ public class MathGameViewer extends JFrame
 			System.out.print("File not found");
 		}
 		
-		gamePanel = new MathGamePanel(ProblemType.ADDITION, 5, 1, image);
+		ArrayList<ProblemType> types = new ArrayList<ProblemType>();
+		types.add(ProblemType.ADDITION);
+		types.add(ProblemType.SUBTRACTION);
+		types.add(ProblemType.MULTIPLICATION);
+		types.add(ProblemType.DIVISION);
+		
+		gamePanel = new MathGamePanel(types, 2, 12, image);
 		add(gamePanel);
 	}
 	
