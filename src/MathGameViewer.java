@@ -8,11 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-<<<<<<< HEAD
 import java.util.ArrayList;
-=======
 import java.awt.event.KeyListener;
->>>>>>> bc5bf968abefbc757477427b97b49009340f213e
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
