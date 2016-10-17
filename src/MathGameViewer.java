@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
  * 
  * @author Bobby
  */
-public class MathGameViewer extends JFrame implements ActionListener, KeyListener {
+public class MathGameViewer extends JFrame implements ActionListener, KeyListener, GameCompleteListener {
 
 	MathGamePanel gamePanel;
 	JMenuBar menuBar;
@@ -150,6 +150,27 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void gameCompleted(GameCompleteEvent e)
+	{
+		// All the needed information for the game is in "e".
+		// e.getProblems() gives each problem as a String (probably won't be used)
+		// e.getResults() gives the boolean result for each problem (true = correct, false = incorrect)
+		//		(which can be tallied as needed)
+		// e.getNanoTimes() gives a list of times that you can average or sum as needed
+		//		(and the getTimeString method will convert it to a readable form)
+		// e.getTryCounts() gives the number of attempts for each problem
+	}
+	
+	public String getTimeString(long nanos)
+	{
+		double elapsedSeconds = nanos / 1e9;
+		long elapsedMinutes = (long)(elapsedSeconds / 60);
+		elapsedSeconds -= elapsedMinutes * 60;
+		
+		return String.format("%02d:%07.4f", elapsedMinutes, elapsedSeconds);
 	}
 
 }

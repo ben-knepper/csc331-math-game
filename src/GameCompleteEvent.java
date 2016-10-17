@@ -26,7 +26,7 @@ public class GameCompleteEvent
 	{
 		return problems;
 	}
-	public ArrayList<Boolean> results()
+	public ArrayList<Boolean> getResults()
 	{
 		return results;
 	}
