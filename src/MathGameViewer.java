@@ -54,6 +54,8 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		
 		gamePanel = new MathGamePanel(types, 2, 12, image);
 		add(gamePanel);
+		
+		gamePanel.addGameCompleteListener(this);
 
 		// Creates a menu
 
