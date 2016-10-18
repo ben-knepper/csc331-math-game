@@ -30,4 +30,6 @@ public class ProblemPanelEvent
 		return nanosTaken;
 	}
 	
+
 }
+
