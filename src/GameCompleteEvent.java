@@ -38,8 +38,6 @@ public class GameCompleteEvent
 	{
 		return tryCounts;
 	}
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> 7752095aea22224bec3a5ef38339a39afc31194f
+
