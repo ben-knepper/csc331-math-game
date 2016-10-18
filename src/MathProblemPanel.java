@@ -5,70 +5,165 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 
 public class MathProblemPanel extends JPanel implements MouseListener, KeyListener
 {
-	
-	private enum State
+
+	private enum PanelState
 	{
 		COVER,
 		PROBLEM,
 		IMAGE
 	}
+	private enum ProblemState
+	{
+		NORMAL,
+		CORRECT,
+		INCORRECT,
+		INCORRECT_FINAL
+	}
+	
+	private static final long serialVersionUID = 1L;
 	
 	public static final int NUMBER_MAX = 12;
+	public static final Color CORRECT_COLOR = new Color(32, 208, 32);
+	public static final Color INCORRECT_COLOR = Color.RED;
 	
-	private ProblemType type;
+	private static Random rng = new Random();
+	private Timer timer = new Timer();
+	
+	private ArrayList<ProblemType> types;
 	private int baseNum;
 	private Image image;
-
-	private JLabel coverLabel;
-	private JLabel problemLabel;
-	private JLabel imageLabel;
 	
-	private ArrayList<ProblemPanelListener> problemCompleteListeners
+	private ArrayList<MathProblemPanel> allPanels;
+	
+	private ArrayList<ProblemPanelListener> problemPanelListeners
 			= new ArrayList<ProblemPanelListener>();
 	
 	private Color coverColor;
 	
-	private State state;
+	private PanelState panelState;
+	private ProblemState problemState;
 	private String problem;
 	private String answer;
 	private int correctAnswer;
+	private int tries;
 	
-	public MathProblemPanel(ProblemType type, int baseNum, Image image)
+	private long totalNanos;
+	private long startNanos;
+	
+	public MathProblemPanel(ArrayList<ProblemType> types, int baseNum, Image image,
+			ArrayList<MathProblemPanel> allPanels)
 	{
-		this.type = type;
+		this.types = types;
 		this.baseNum = baseNum;
 		this.image = image;
+		
+		this.allPanels = allPanels;
 		
 		coverColor = Color.GRAY;
 		
 		addMouseListener(this);
+		addKeyListener(this);
 		
-		state = State.COVER;
+		panelState = PanelState.COVER;
 		resetProblem();
+	}
+	
+	public String getProblem()
+	{
+		return problem;
 	}
 	
 	public void resetProblem()
 	{
-		problem = "test";
+		ProblemType type = types.get(rng.nextInt(types.size()));
+		
+		int firstNum = -1;
+		int secondNum = -1;
+		String sign = null;
+		
+		int rngNum;
+		
+		switch (type)
+		{
+			case ADDITION:
+				rngNum = rng.nextInt(NUMBER_MAX + 1);
+				
+				sign = "+";
+				firstNum = rngNum;
+				secondNum = baseNum;
+				
+				correctAnswer = firstNum + secondNum;
+				break;
+			case SUBTRACTION:
+				rngNum = rng.nextInt(NUMBER_MAX + 1);
+				
+				sign = "-";
+				if (rngNum > baseNum)
+				{
+					firstNum = rngNum;
+					secondNum = baseNum;
+				}
+				else
+				{
+					firstNum = baseNum;
+					secondNum = rngNum;
+				}
+				
+				correctAnswer = firstNum - secondNum;
+				break;
+			case MULTIPLICATION:
+				rngNum = rng.nextInt(NUMBER_MAX + 1);
+				
+				sign = "×";
+				firstNum = rngNum;
+				secondNum = baseNum;
+				
+				correctAnswer = firstNum * secondNum;
+				break;
+			case DIVISION:
+				rngNum = rng.nextInt(NUMBER_MAX) + 1; // can't be 0
+				
+				sign = "÷";
+				if (baseNum == 0)
+				{
+					firstNum = 0;
+					secondNum = rngNum;
+				}
+				else
+				{
+					firstNum = baseNum * rngNum;
+					secondNum = baseNum;
+				}
+				
+				correctAnswer = firstNum / secondNum;
+				break;
+		}
+		
+		problem = String.format("%d %s %d = ", firstNum, sign, secondNum);
+		answer = "0";
+		tries = 0;
+		problemState = ProblemState.NORMAL;
+		
+		totalNanos = 0;
+		startNanos = System.nanoTime();
+		
+		repaint();
 	}
 	public void setImage(Image image)
 	{
-		boolean imageIsVisible = imageLabel.isVisible();
-		imageLabel = new JLabel(new ImageIcon(image));
-		imageLabel.setVisible(imageIsVisible);
-		//add(imageLabel);
+		this.image = image;
 	}
 	
 	@Override
@@ -77,7 +172,8 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		super.paintComponent(g);
 		
 		Graphics2D g2 = (Graphics2D) g;
-		switch (state)
+		
+		switch (panelState)
 		{
 			case COVER:
 				g2.setColor(coverColor);
@@ -86,12 +182,68 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				g2.drawRect(0, 0, getWidth(), getHeight());
 				break;
 			case PROBLEM:
+				
 				g2.setFont(new Font("Arial", Font.PLAIN, 36));
-				int stringWidth = g2.getFontMetrics().stringWidth(problem);
+				
+				int problemWidth = g2.getFontMetrics().stringWidth(problem);
 				int stringHeight = g2.getFontMetrics().getHeight();
-				int x = (getWidth() - stringWidth) / 2;
-				int y = (getHeight() / 2) + (stringHeight / 3);
-				g2.drawString(problem, x, y);
+				int problemX = (getWidth() - problemWidth) / 2;
+				int problemY = (getHeight() / 2) - (stringHeight * 2 / 3);
+				int answerY = problemY + stringHeight;
+				
+				g2.drawString(problem, problemX, problemY);
+				
+				int answerWidth = g2.getFontMetrics().stringWidth(answer);
+				int answerX = (getWidth() - answerWidth) / 2;
+				
+				if (problemState == ProblemState.INCORRECT_FINAL)
+				{
+					g2.setColor(INCORRECT_COLOR);
+				}
+				
+				g2.drawString(answer, answerX, answerY);
+
+				if (problemState != ProblemState.NORMAL)
+				{
+					String lastLine = null;
+					switch (problemState)
+					{
+						case CORRECT:
+							lastLine = "Correct!";
+							g2.setColor(CORRECT_COLOR);
+							break;
+						case INCORRECT:
+							lastLine = "Incorrect";
+							g2.setColor(INCORRECT_COLOR);
+							break;
+						case INCORRECT_FINAL:
+							lastLine = "(" + correctAnswer + ")";
+							g2.setColor(CORRECT_COLOR);
+							break;
+						default:
+							// do nothing
+							break;
+					}
+					
+					int lastLineWidth = g2.getFontMetrics().stringWidth(lastLine);
+					int lastLineX = (getWidth() - lastLineWidth) / 2;
+					int lastLineY = answerY + stringHeight;
+					
+					g2.drawString(lastLine, lastLineX, lastLineY);
+				}
+				
+//				//////
+//				// TESTING
+//				double elapsedSeconds = totalNanos / 1e9;
+//				long elapsedMinutes = (long)(elapsedSeconds / 60);
+//				elapsedSeconds -= elapsedMinutes * 60;
+//				
+//				String time = String.format("%02d:%05.2f", elapsedMinutes, elapsedSeconds);
+//				
+//				g2.setColor(Color.BLACK);
+//				g2.drawString(time, 0, 20);
+//				//////
+				
 				g2.setColor(Color.BLACK);
 				g2.drawRect(0, 0, getWidth(), getHeight());
 				break;
@@ -106,14 +258,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
-		// TODO Auto-generated method stub
-		if (state == State.COVER)
-			state = State.PROBLEM;
-		else if (state == State.PROBLEM)
-			state = State.IMAGE;
-		else
-			state = State.COVER;
-		repaint();
+		// do nothing
 	}
 	@Override
 	public void mouseEntered(MouseEvent e)
@@ -130,7 +275,29 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		// do nothing
+		if (panelState == PanelState.COVER)
+		{
+			for (MathProblemPanel panel : allPanels)
+			{
+				if (panel.panelState == PanelState.PROBLEM)
+				{
+					long currentNanos = System.nanoTime();
+					long elapsedNanos = currentNanos - panel.startNanos;
+					panel.totalNanos += elapsedNanos;
+					
+					panel.panelState = PanelState.COVER;
+					panel.repaint();
+				}
+			}
+			
+			panelState = PanelState.PROBLEM;
+			
+			repaint();
+			
+			startNanos = System.nanoTime();
+		}
+
+		grabFocus();
 	}
 	@Override
 	public void mouseReleased(MouseEvent e)
@@ -141,7 +308,137 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	@Override
 	public void keyPressed(KeyEvent arg0)
 	{
-		// do nothing
+		if (panelState == PanelState.PROBLEM)
+		{
+			// if the key was backspace and the answer is not 0
+			if (arg0.getKeyCode() == KeyEvent.VK_BACK_SPACE && !answer.equals("0"))
+			{
+				// remove the first digit
+				answer = answer.substring(0, answer.length() - 1);
+				
+				if (answer.length() == 0)
+					answer = "0";
+			}
+			else if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
+			{
+				// make all panels unresponsive to input
+				for (MathProblemPanel panel : allPanels)
+				{
+					panel.removeMouseListener(panel);
+					panel.removeKeyListener(panel);
+				}
+				
+				// increment tries
+				++tries;
+				
+				int myAnswer = Integer.parseInt(answer);
+				if (myAnswer == correctAnswer)
+				{
+					totalNanos += System.nanoTime() - startNanos;
+					
+					problemState = ProblemState.CORRECT;
+					
+					timer.schedule(new TimerTask()
+					{
+						@Override
+						public void run()
+						{
+							panelState = PanelState.IMAGE;
+							repaint();
+							
+							// restore input
+							for (MathProblemPanel panel : allPanels)
+							{
+								panel.addMouseListener(panel);
+								panel.addKeyListener(panel);
+							}
+						}
+					}, 2000);
+					
+					for (ProblemPanelListener listener : problemPanelListeners)
+						listener.problemCompleted(new ProblemPanelEvent(this, true, tries, totalNanos));
+				}
+				else
+				{
+					totalNanos += System.nanoTime() - startNanos;
+					
+					if (tries == 3)
+					{
+						problemState = ProblemState.INCORRECT_FINAL;
+						
+						timer.schedule(new TimerTask()
+						{
+							@Override
+							public void run()
+							{
+								panelState = PanelState.IMAGE;
+								repaint();
+								
+								// restore input
+								for (MathProblemPanel panel : allPanels)
+								{
+									panel.addMouseListener(panel);
+									panel.addKeyListener(panel);
+								}
+							}
+						}, 2000);
+						
+						for (ProblemPanelListener listener : problemPanelListeners)
+							listener.problemCompleted(new ProblemPanelEvent(this, false, tries, totalNanos));
+					}
+					else
+					{
+						totalNanos += System.nanoTime() - startNanos;
+						
+						problemState = ProblemState.INCORRECT;
+						
+						timer.schedule(new TimerTask()
+							{
+								@Override
+								public void run()
+								{
+									panelState = PanelState.PROBLEM;
+									problemState = ProblemState.NORMAL;
+									answer = "0";
+									repaint();
+									
+									// restore input
+									for (MathProblemPanel panel : allPanels)
+									{
+										panel.addMouseListener(panel);
+										panel.addKeyListener(panel);
+									}
+									
+									// start the clock again
+									startNanos = System.nanoTime();
+								}
+							}, 1000);
+					}
+				}
+			}
+			else
+			{
+				char key = arg0.getKeyChar();
+				
+				// if the key is a digit and the answer is not already 3 digits
+				if (Character.isDigit(key) && answer.length() < 3)
+				{
+					if (answer.equals("0"))
+					{
+						if (key == '0')
+							return; // don't do anything
+						else
+							answer = key + "";
+					}
+					else
+					{
+						answer += key;
+					}
+				}
+			}
+			
+			repaint();
+		}
 	}
 	@Override
 	public void keyReleased(KeyEvent arg0)
@@ -151,8 +448,16 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	@Override
 	public void keyTyped(KeyEvent arg0)
 	{
-		// TODO Auto-generated method stub
-		
+		// do nothing
+	}
+	
+	public void addProblemPanelListener(ProblemPanelListener listener)
+	{
+		problemPanelListeners.add(listener);
+	}
+	public void removeProblemPanelListener(ProblemPanelListener listener)
+	{
+		problemPanelListeners.remove(listener);
 	}
 	
 }

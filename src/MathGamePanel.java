@@ -21,13 +21,21 @@ enum ProblemType
  * The main panel for the math game, which has a grid of MathProblemPanels.
  * @author Ben
  */
-public class MathGamePanel extends JPanel
+public class MathGamePanel extends JPanel implements ProblemPanelListener
 {
 	
-	private ProblemType type;
+	private static final long serialVersionUID = 1L;
+	
+	private ArrayList<ProblemType> types;
 	private int size;
 	private int baseNum;
 	private BufferedImage image;
+	
+	private int completeCount;
+	private ArrayList<String> problems;
+	private ArrayList<Boolean> results;
+	private ArrayList<Long> nanoTimes;
+	private ArrayList<Integer> tryCounts;
 	
 	private ArrayList<MathProblemPanel> problemPanels = new ArrayList<MathProblemPanel>();
 	
@@ -36,19 +44,74 @@ public class MathGamePanel extends JPanel
 	
 	/**
 	 * Initializes a MathGamePanel.
-	 * @param type The type(s) of problems to use.
+	 * @param types The type(s) of problems to use.
+	 * @param size The number of rows and columns to have (always the same).
+	 * @param baseNum The number to use in all the calculations.
+	 * @param image The image to use.
+	 */
+	public MathGamePanel(ArrayList<ProblemType> types, int size, int baseNum, BufferedImage image)
+	{
+		this.types = types;
+		this.size = size;
+		this.baseNum = baseNum;
+		this.image = image;
+		
+		startNewGame();
+	}
+	/**
+	 * Initializes a MathGamePanel with a single problem type.
+	 * @param type The type of problems to use.
 	 * @param size The number of rows and columns to have (always the same).
 	 * @param baseNum The number to use in all the calculations.
 	 * @param image The image to use.
 	 */
 	public MathGamePanel(ProblemType type, int size, int baseNum, BufferedImage image)
 	{
-		this.type = type;
+		this.types = new ArrayList<ProblemType>();
+		types.add(type);
+		
 		this.size = size;
 		this.baseNum = baseNum;
 		this.image = image;
 		
-		startNewGame(1);
+		startNewGame();
+	}
+	
+	/**
+	 * Gets the base number for the panel problems.
+	 * @return The base number.
+	 */
+	public int getBaseNum()
+	{
+		return baseNum;
+	}
+	/**
+	 * Gets the size (number of rows and columns) of the panel.
+	 * @return The size of the panel.
+	 */
+	public int getGridSize()
+	{
+		return size;
+	}
+	/**
+	 * Gets the problem type(s) of the panel.
+	 * @return The problem type(s).
+	 */
+	public ArrayList<ProblemType> getTypes()
+	{
+		return types;
+	}
+	/**
+	 * Gets the image of the panel.
+	 * @return The image;
+	 */
+	public BufferedImage getImage()
+	{
+		return image;
+	}
+	public int getPanelCount()
+	{
+		return size * size;
 	}
 	
 	/**
@@ -56,6 +119,11 @@ public class MathGamePanel extends JPanel
 	 */
 	public void startNewGame()
 	{
+		for (MathProblemPanel panel : problemPanels)
+		{
+			remove(panel);
+		}
+		
 		problemPanels = new ArrayList<MathProblemPanel>();
 		
 		setLayout(new GridLayout(size, size, 0, 0));
@@ -63,10 +131,21 @@ public class MathGamePanel extends JPanel
 		BufferedImage[] subImages = splitImage();
 		for (int i = 0; i < size * size; ++i)
 		{
-			MathProblemPanel problemPanel = new MathProblemPanel(type, baseNum, subImages[i]);
+			MathProblemPanel problemPanel = new MathProblemPanel(
+					types, baseNum, subImages[i], problemPanels);
+			problemPanel.addProblemPanelListener(this);
+			
 			problemPanels.add(problemPanel);
 			this.add(problemPanel);
 		}
+		
+		completeCount = 0;
+		problems = new ArrayList<String>();
+		results = new ArrayList<Boolean>();
+		nanoTimes = new ArrayList<Long>();
+		tryCounts = new ArrayList<Integer>();
+		
+		revalidate();
 	}
 	/**
 	 * Starts a new game using the new base number.
@@ -109,14 +188,32 @@ public class MathGamePanel extends JPanel
 	 * @param baseNum The number to use in all the calculations.
 	 * @param size The number of rows and columns to have (always the same).
 	 * @param image The image to use.
-	 * @param type The type(s) of problems to use.
+	 * @param types The type(s) of problems to use.
+	 */
+	public void startNewGame(int baseNum, int size, BufferedImage image, ArrayList<ProblemType> types)
+	{
+		this.baseNum = baseNum;
+		this.size = size;
+		this.image = image;
+		this.types = types;
+		
+		startNewGame();
+	}
+	/**
+	 * Starts a new game using all new parameters and a single problem type.
+	 * @param baseNum The number to use in all the calculations.
+	 * @param size The number of rows and columns to have (always the same).
+	 * @param image The image to use.
+	 * @param type The type of problems to use.
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image, ProblemType type)
 	{
 		this.baseNum = baseNum;
 		this.size = size;
 		this.image = image;
-		this.type = type;
+		
+		this.types = new ArrayList<ProblemType>();
+		this.types.add(type);
 		
 		startNewGame();
 	}
@@ -165,10 +262,30 @@ public class MathGamePanel extends JPanel
 	{
 		gameCompleteListeners.add(listener);
 	}
+	public void removeGameCompleteListener(GameCompleteListener listener)
+	{
+		gameCompleteListeners.remove(listener);
+	}
 	private void gameCompleted()
 	{
 		for (GameCompleteListener listener : gameCompleteListeners)
-			listener.gameCompleted();
+			listener.gameCompleted(new GameCompleteEvent(this,
+					problems, results, nanoTimes, tryCounts));
+	}
+
+	@Override
+	public void problemCompleted(ProblemPanelEvent e)
+	{
+		++completeCount;
+		problems.add(e.getSender().getProblem());
+		results.add(e.isCorrect());
+		nanoTimes.add(e.getNanosTaken());
+		tryCounts.add(e.getTriesTaken());
+		
+		if (completeCount == getPanelCount())
+		{
+			gameCompleted();
+		}
 	}
 	
 }

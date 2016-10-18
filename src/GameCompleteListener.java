@@ -7,5 +7,5 @@ public interface GameCompleteListener
 	/**
 	 * Called when a game is completed.
 	 */
-	public void gameCompleted();
+	public void gameCompleted(GameCompleteEvent e);
 }
