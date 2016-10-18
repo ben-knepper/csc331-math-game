@@ -43,15 +43,25 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		} catch (IOException e) {
 			System.out.print("File not found");
 		}
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> 7752095aea22224bec3a5ef38339a39afc31194f
 		ArrayList<ProblemType> types = new ArrayList<ProblemType>();
 		types.add(ProblemType.ADDITION);
 		types.add(ProblemType.SUBTRACTION);
 		types.add(ProblemType.MULTIPLICATION);
 		types.add(ProblemType.DIVISION);
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> 7752095aea22224bec3a5ef38339a39afc31194f
 		gamePanel = new MathGamePanel(types, 2, 12, image);
 		add(gamePanel);
+		
+		gamePanel.addGameCompleteListener(this);
 
 		gamePanel.addGameCompleteListener(this);
 
@@ -195,6 +205,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void gameCompleted(GameCompleteEvent e) {
 		// All the needed information for the game is in "e".
 		// e.getProblems() gives each problem as a String (probably won't be
@@ -217,3 +228,26 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	}
 
 }
+=======
+	public void gameCompleted(GameCompleteEvent e)
+	{
+		// All the needed information for the game is in "e".
+		// e.getProblems() gives each problem as a String (probably won't be used)
+		// e.getResults() gives the boolean result for each problem (true = correct, false = incorrect)
+		//		(which can be tallied as needed)
+		// e.getNanoTimes() gives a list of times that you can average or sum as needed
+		//		(and the getTimeString method will convert it to a readable form)
+		// e.getTryCounts() gives the number of attempts for each problem
+	}
+	
+	public String getTimeString(long nanos)
+	{
+		double elapsedSeconds = nanos / 1e9;
+		long elapsedMinutes = (long)(elapsedSeconds / 60);
+		elapsedSeconds -= elapsedMinutes * 60;
+		
+		return String.format("%02d:%07.4f", elapsedMinutes, elapsedSeconds);
+	}
+
+}
+>>>>>>> 7752095aea22224bec3a5ef38339a39afc31194f
