@@ -35,7 +35,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	private static final long serialVersionUID = 1L;
 	
 	public static final int NUMBER_MAX = 12;
-	public static final Color CORRECT_COLOR = new Color(32, 208, 32);
+	public static final Color CORRECT_COLOR = new Color(32, 176, 32);
 	public static final Color INCORRECT_COLOR = Color.RED;
 	
 	private static Random rng = new Random();
