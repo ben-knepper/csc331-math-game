@@ -28,6 +28,8 @@ import javax.swing.ButtonGroup;
  */
 public class MathGameViewer extends JFrame implements ActionListener, KeyListener, GameCompleteListener {
 
+	private static final long serialVersionUID = 1L;
+	
 	MathGamePanel gamePanel;
 	JMenuBar menuBar;
 	TextField mathText1, mathText2, mathText3, mathText4;
@@ -50,7 +52,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		types.add(ProblemType.MULTIPLICATION);
 		types.add(ProblemType.DIVISION);
 
-		gamePanel = new MathGamePanel(types, 2, 12, image);
+		gamePanel = new MathGamePanel(types, 5, 12, image);
 		add(gamePanel);
 
 		gamePanel.addGameCompleteListener(this);
