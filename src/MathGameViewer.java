@@ -192,10 +192,10 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 			System.out.print("File not found");
 		}
 		
-		if(typeChoice.equals(typeOption[0])){
+		if(typeChoice.equals(objectMathType[0])){
 			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeAdd);
 		}
-		if(typeChoice.equals(typeOption[1])){
+		if(typeChoice.equals(objectMathType[1])){
 			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeMult);
 		}
 		
