@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 
+
 /**
  * Shows the math game window, with menu, status bar, and MathGamePanel.
  * 
@@ -33,7 +34,10 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	TextField mathText1, mathText2, mathText3, mathText4;
 	JFrame frame;
 	JPanel panel;
-	JRadioButton rb;
+	String gridChoice;
+	String imageChoice;
+	String typeChoice;
+	
 
 	public MathGameViewer() {
 
@@ -49,6 +53,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		types.add(ProblemType.SUBTRACTION);
 		types.add(ProblemType.MULTIPLICATION);
 		types.add(ProblemType.DIVISION);
+		
 
 		gamePanel = new MathGamePanel(types, 2, 12, image);
 		add(gamePanel);
@@ -109,12 +114,20 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	public void newGamePanel() {
 		final int numButtons = 3;
 		panel = new JPanel();
-		GroupButtonUtils buttonChoice = new GroupButtonUtils();
+		
+		ArrayList<ProblemType> newTypeAdd = new ArrayList<ProblemType>();
+		newTypeAdd.add(ProblemType.ADDITION);
+		newTypeAdd.add(ProblemType.SUBTRACTION);
+		
+		ArrayList<ProblemType> newTypeMult = new ArrayList<ProblemType>();
+		newTypeMult.add(ProblemType.MULTIPLICATION);
+		newTypeMult.add(ProblemType.DIVISION);
+		
 		ButtonGroup gridButton = new ButtonGroup();
 		ButtonGroup imageButton = new ButtonGroup();
 		ButtonGroup typeButton = new ButtonGroup();
 
-		String[] objectGridSizes = { "2x2", "3x3", "4x4" };
+		String[] objectGridSizes = { "2", "3", "4" };
 		String[] objectImages = { "1", "2", "3" };
 		String[] objectMathType = { "ADDITION and SUBTRACTION", "MULTIPLICATION AND DIVISION" };
 
@@ -152,6 +165,39 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		optionObjects[5] = typeOption;
 
 		JOptionPane.showMessageDialog(panel, optionObjects);
+		for(int i = 0; i < gridSizeOption.length; i++){
+			if(gridSizeOption[i].isSelected()){
+				gridChoice = gridSizeOption[i].getText();
+			}
+		}
+		for(int i = 0; i < imageOption.length; i++){
+			if(imageOption[i].isSelected()){
+				imageChoice = imageOption[i].getText();
+			}
+		}
+		for(int i = 0; i < typeOption.length; i++){
+			if(typeOption[i].isSelected()){
+				typeChoice = typeOption[i].getText();
+			}
+		}
+		int gridSelect = Integer.parseInt(gridChoice);
+		imageChoice = "image"+imageChoice+".jpg";
+		
+		BufferedImage imageSelect = null;
+		try {
+			imageSelect = ImageIO.read(new File(imageChoice));
+		} catch (IOException e) {
+			System.out.print("File not found");
+		}
+		
+		if(typeChoice.equals(typeOption[0])){
+			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeAdd);
+		}
+		if(typeChoice.equals(typeOption[1])){
+			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeMult);
+		}
+		
+
 
 	}
 
