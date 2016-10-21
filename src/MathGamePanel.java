@@ -42,6 +42,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	private ArrayList<GameCompleteListener> gameCompleteListeners
 			= new ArrayList<GameCompleteListener>();
 	
+	public MathGamePanel() { }
 	/**
 	 * Initializes a MathGamePanel.
 	 * @param types The type(s) of problems to use.

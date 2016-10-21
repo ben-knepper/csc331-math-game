@@ -43,21 +43,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 
 	public MathGameViewer() {
 
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(new File("image1.jpg"));
-		} catch (IOException e) {
-			System.out.print("File not found");
-		}
-
-		ArrayList<ProblemType> types = new ArrayList<ProblemType>();
-		types.add(ProblemType.ADDITION);
-		types.add(ProblemType.SUBTRACTION);
-		types.add(ProblemType.MULTIPLICATION);
-		types.add(ProblemType.DIVISION);
-		
-
-		gamePanel = new MathGamePanel(types, 5, 12, image);
+		gamePanel = new MathGamePanel();
 		add(gamePanel);
 
 		gamePanel.addGameCompleteListener(this);
@@ -103,7 +89,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		// Creates a layer to display Math problems on
 
 		setTitle("Math Game");
-		setSize(500, 500);
+		setSize(800, 500);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);

@@ -39,7 +39,11 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	public static final Color INCORRECT_COLOR = Color.RED;
 	
 	private static Random rng = new Random();
-	private Timer timer = new Timer();
+	private Timer resultTimer = new Timer();
+	private int caretIndex;
+	private char currentCaret;
+	private Timer caretTimer = new Timer();
+	private final long caretTimerInterval = 700;
 	
 	private ArrayList<ProblemType> types;
 	private int baseNum;
@@ -56,6 +60,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	private ProblemState problemState;
 	private String problem;
 	private String answer;
+	private final String defaultAnswer = "___"; // 3 underscores
 	private int correctAnswer;
 	private int tries;
 	
@@ -151,10 +156,12 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				break;
 		}
 		
-		problem = String.format("%d %s %d = ", firstNum, sign, secondNum);
-		answer = "0";
+		problem = String.format("%d %s %d =", firstNum, sign, secondNum);
+		answer = defaultAnswer;
 		tries = 0;
 		problemState = ProblemState.NORMAL;
+
+		caretIndex = 2;
 		
 		totalNanos = 0;
 		startNanos = System.nanoTime();
@@ -182,26 +189,50 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				g2.drawRect(0, 0, getWidth(), getHeight());
 				break;
 			case PROBLEM:
+				// resize the font according the dimension smaller than the ratio 16:9
+				int fontSize;
+				if (((double)getWidth() / getHeight()) < (16.0 / 9))
+					fontSize = getWidth() / 8;
+				else
+					fontSize = (int)(getHeight() / 4.5);
 				
-				g2.setFont(new Font("Arial", Font.PLAIN, 36));
+				int width = getWidth();
+				int height = getHeight();
+				double ratio = (double)getWidth() / getHeight();
+				double testRatio = 16.0 / 9;
+				
+				g2.setFont(new Font("Courier New", Font.PLAIN, fontSize));
 				
 				int problemWidth = g2.getFontMetrics().stringWidth(problem);
 				int stringHeight = g2.getFontMetrics().getHeight();
+				stringHeight = stringHeight * 6 / 5;
 				int problemX = (getWidth() - problemWidth) / 2;
-				int problemY = (getHeight() / 2) - (stringHeight * 2 / 3);
+				int problemY = (getHeight() / 2) - (stringHeight * 5 / 6);
 				int answerY = problemY + stringHeight;
 				
 				g2.drawString(problem, problemX, problemY);
-				
-				int answerWidth = g2.getFontMetrics().stringWidth(answer);
-				int answerX = (getWidth() - answerWidth) / 2;
 				
 				if (problemState == ProblemState.INCORRECT_FINAL)
 				{
 					g2.setColor(INCORRECT_COLOR);
 				}
+				else
+				{
+					g2.setColor(Color.BLACK);
+				}
 				
-				g2.drawString(answer, answerX, answerY);
+				int answerWidth = g2.getFontMetrics().stringWidth(answer);
+				int charWidth = answerWidth / answer.length();
+				int spaceWidth = (int)(charWidth * 0.2);
+				answerWidth = charWidth * answer.length()
+						+ spaceWidth * (answer.length() - 1);
+				int answerX = (getWidth() - answerWidth) / 2;
+				
+				for (int i = 0; i < answer.length(); ++i)
+				{
+					g2.drawString(answer.charAt(i) + "", answerX, answerY);
+					answerX += charWidth + spaceWidth;
+				}
 
 				if (problemState != ProblemState.NORMAL)
 				{
@@ -291,6 +322,9 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 			}
 			
 			panelState = PanelState.PROBLEM;
+
+			currentCaret = '_';
+			caretTimer.schedule(new CaretTask(), caretTimerInterval);
 			
 			repaint();
 			
@@ -310,16 +344,19 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	{
 		if (panelState == PanelState.PROBLEM)
 		{
-			// if the key was backspace and the answer is not 0
-			if (arg0.getKeyCode() == KeyEvent.VK_BACK_SPACE && !answer.equals("0"))
+			// if the key was backspace and the answer is not empty
+			if (arg0.getKeyCode() == KeyEvent.VK_BACK_SPACE
+					&& caretIndex != 2)
 			{
-				// remove the first digit
-				answer = answer.substring(0, answer.length() - 1);
+				++caretIndex;
 				
-				if (answer.length() == 0)
-					answer = "0";
+				// remove the first digit
+				answer = defaultAnswer.substring(0, caretIndex) 
+						+ currentCaret
+						+ answer.substring(caretIndex, answer.length() - 1);
 			}
-			else if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
+			else if (arg0.getKeyCode() == KeyEvent.VK_ENTER
+					&& !answer.endsWith(currentCaret + ""))
 			{
 				// make all panels unresponsive to input
 				for (MathProblemPanel panel : allPanels)
@@ -331,14 +368,14 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				// increment tries
 				++tries;
 				
-				int myAnswer = Integer.parseInt(answer);
+				int myAnswer = Integer.parseInt(answer.substring(caretIndex + 1));
 				if (myAnswer == correctAnswer)
 				{
 					totalNanos += System.nanoTime() - startNanos;
 					
 					problemState = ProblemState.CORRECT;
 					
-					timer.schedule(new TimerTask()
+					resultTimer.schedule(new TimerTask()
 					{
 						@Override
 						public void run()
@@ -353,7 +390,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 								panel.addKeyListener(panel);
 							}
 						}
-					}, 2000);
+					}, 1500);
 					
 					for (ProblemPanelListener listener : problemPanelListeners)
 						listener.problemCompleted(new ProblemPanelEvent(this, true, tries, totalNanos));
@@ -366,7 +403,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 					{
 						problemState = ProblemState.INCORRECT_FINAL;
 						
-						timer.schedule(new TimerTask()
+						resultTimer.schedule(new TimerTask()
 						{
 							@Override
 							public void run()
@@ -392,14 +429,16 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 						
 						problemState = ProblemState.INCORRECT;
 						
-						timer.schedule(new TimerTask()
+						resultTimer.schedule(new TimerTask()
 							{
 								@Override
 								public void run()
 								{
 									panelState = PanelState.PROBLEM;
 									problemState = ProblemState.NORMAL;
-									answer = "0";
+									answer = defaultAnswer;
+									currentCaret = '_';
+									caretIndex = 2;
 									repaint();
 									
 									// restore input
@@ -421,18 +460,22 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				char key = arg0.getKeyChar();
 				
 				// if the key is a digit and the answer is not already 3 digits
-				if (Character.isDigit(key) && answer.length() < 3)
+				if (Character.isDigit(key) && caretIndex >= 0)
 				{
-					if (answer.equals("0"))
+					if (answer.substring(caretIndex + 1) == "0")
 					{
-						if (key == '0')
-							return; // don't do anything
-						else
-							answer = key + "";
+						answer = "_" + currentCaret + key;
 					}
 					else
 					{
-						answer += key;
+						if (caretIndex < 1)
+							answer = answer.substring(caretIndex + 1) + key;
+						else
+							answer = defaultAnswer.substring(0, caretIndex - 1)
+									+ currentCaret
+									+ answer.substring(caretIndex + 1) + key;
+						
+						--caretIndex;
 					}
 				}
 			}
@@ -458,6 +501,36 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	public void removeProblemPanelListener(ProblemPanelListener listener)
 	{
 		problemPanelListeners.remove(listener);
+	}
+	
+	class CaretTask extends TimerTask
+	{
+		@Override
+		public void run()
+		{
+			// if the problem panel is still showing and editable
+			if (problemState == ProblemState.NORMAL
+					&& caretIndex >= 0)
+			{
+				// switch the currentCaret
+				if (answer.charAt(caretIndex) == '_')
+				{
+					currentCaret = ' ';
+				}
+				else
+					currentCaret = '_';
+
+				answer = answer.substring(0, caretIndex)
+						+ currentCaret
+						+ answer.substring(caretIndex + 1);
+				
+				repaint();
+			}
+
+			// start the timer again if the problem is still showing
+			if (panelState == PanelState.PROBLEM)
+				caretTimer.schedule(new CaretTask(), caretTimerInterval);
+		}
 	}
 	
 }
