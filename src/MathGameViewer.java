@@ -57,7 +57,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		JMenu newGameMenu = new JMenu("New");
 
 		JMenuItem newGame = new JMenuItem("New Game");
-		newGame.setAccelerator(KeyStroke.getKeyStroke("N"));
+		newGame.setAccelerator(KeyStroke.getKeyStroke("ctrl N"));
 		newGameMenu.add(newGame);
 
 		JMenu editMenu = new JMenu("Edit");
@@ -135,21 +135,25 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 			gridSizeOption[i] = new JRadioButton(objectGridSizes[i]);
 			gridButton.add(gridSizeOption[i]);
 		}
+		gridSizeOption[0].setSelected(true);
 		// Radio Buttons for Image option / button group
 		for (int i = 0; i < numButtons; i++) {
 			imageOption[i] = new JRadioButton(objectImages[i]);
 			imageButton.add(imageOption[i]);
 		}
+		imageOption[0].setSelected(true);
 		// Radio Buttons for Math Type / button group
 		for (int i = 0; i < 2; i++) {
 			typeOption[i] = new JRadioButton(objectMathType[i]);
 			typeButton.add(typeOption[i]);
 		}
+		typeOption[0].setSelected(true);
 		// Radio Buttons for Base number / button group
 		for(int i = 0; i < 11; i++){
 			baseOption[i] = new JRadioButton(objectBase[i]);
 			baseButton.add(baseOption[i]);
 		}
+		baseOption[0].setSelected(true);
 		
 		// List of option objects to make a vertical option pane
 		JLabel gridMessage = new JLabel("Grid Size: ");
@@ -166,7 +170,13 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		optionObjects[6] = baseMessage;
 		optionObjects[7] = baseOption;
 
-		JOptionPane.showMessageDialog(panel, optionObjects);
+		int choice = JOptionPane.showConfirmDialog(
+				panel, optionObjects, "New Game", JOptionPane.OK_CANCEL_OPTION);
+		
+		// if user chose Cancel or X'd out, don't do anything
+		if (choice != JOptionPane.OK_OPTION)
+			return;
+		
 		for(int i = 0; i < gridSizeOption.length; i++){
 			if(gridSizeOption[i].isSelected()){
 				gridChoice = gridSizeOption[i].getText();
