@@ -10,4 +10,3 @@ public interface GameCompleteListener
 	public void gameCompleted(GameCompleteEvent e);
 
 }
-

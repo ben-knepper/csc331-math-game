@@ -39,6 +39,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	String gridChoice;
 	String imageChoice;
 	String typeChoice;
+	String baseChoice;
 	
 
 	public MathGameViewer() {
@@ -128,16 +129,20 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		ButtonGroup gridButton = new ButtonGroup();
 		ButtonGroup imageButton = new ButtonGroup();
 		ButtonGroup typeButton = new ButtonGroup();
-
+		ButtonGroup baseButton = new ButtonGroup();
+		
 		String[] objectGridSizes = { "2", "3", "4" };
 		String[] objectImages = { "1", "2", "3" };
 		String[] objectMathType = { "ADDITION and SUBTRACTION", "MULTIPLICATION AND DIVISION" };
+		String[] objectBase = {"1", "2", "3", "4", "5", "6", "7","8","9","10","11","12"};
+		
 
 		JRadioButton[] gridSizeOption = new JRadioButton[numButtons];
 		JRadioButton[] imageOption = new JRadioButton[numButtons];
 		JRadioButton[] typeOption = new JRadioButton[2];
+		JRadioButton[] baseOption = new JRadioButton[11];
 
-		Object[] optionObjects = new Object[6];
+		Object[] optionObjects = new Object[8];
 
 		// Radio buttons for Grid Option / button group
 		for (int i = 0; i < numButtons; i++) {
@@ -154,10 +159,17 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 			typeOption[i] = new JRadioButton(objectMathType[i]);
 			typeButton.add(typeOption[i]);
 		}
+		// Radio Buttons for Base number / button group
+		for(int i = 0; i < 11; i++){
+			baseOption[i] = new JRadioButton(objectBase[i]);
+			baseButton.add(baseOption[i]);
+		}
+		
 		// List of option objects to make a vertical option pane
 		JLabel gridMessage = new JLabel("Grid Size: ");
 		JLabel imageMessage = new JLabel("Image Selection: ");
 		JLabel typeMessage = new JLabel("Math Type: ");
+		JLabel baseMessage = new JLabel("Base number: ");
 
 		optionObjects[0] = gridMessage;
 		optionObjects[1] = gridSizeOption;
@@ -165,6 +177,8 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		optionObjects[3] = imageOption;
 		optionObjects[4] = typeMessage;
 		optionObjects[5] = typeOption;
+		optionObjects[6] = baseMessage;
+		optionObjects[7] = baseOption;
 
 		JOptionPane.showMessageDialog(panel, optionObjects);
 		for(int i = 0; i < gridSizeOption.length; i++){
@@ -182,8 +196,15 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 				typeChoice = typeOption[i].getText();
 			}
 		}
+		
+		for(int i = 0; i < baseOption.length; i++){
+			if(baseOption[i].isSelected()){
+				baseChoice = baseOption[i].getText();
+			}
+		}
 		int gridSelect = Integer.parseInt(gridChoice);
 		imageChoice = "image"+imageChoice+".jpg";
+		int baseSelect = Integer.parseInt(baseChoice);
 		
 		BufferedImage imageSelect = null;
 		try {
@@ -193,10 +214,10 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		}
 		
 		if(typeChoice.equals(objectMathType[0])){
-			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeAdd);
+			gamePanel.startNewGame(baseSelect, gridSelect, imageSelect, newTypeAdd);
 		}
 		if(typeChoice.equals(objectMathType[1])){
-			gamePanel.startNewGame(10, gridSelect, imageSelect, newTypeMult);
+			gamePanel.startNewGame(baseSelect, gridSelect, imageSelect, newTypeMult);
 		}
 		
 

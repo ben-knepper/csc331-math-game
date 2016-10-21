@@ -11,4 +11,3 @@ public interface ProblemPanelListener
 	public void problemCompleted(ProblemPanelEvent e);
 
 }
-
