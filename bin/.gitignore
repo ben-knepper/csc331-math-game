@@ -1,12 +1,4 @@
-/MathGame.class
-/MathGamePanel.class
-/MathGameViewer.class
-/MathProblemPanel.class
-/ProblemType.class
-/MathProblemPanel$1.class
-/MathProblemPanel$2.class
-/MathProblemPanel$3.class
-/ProblemPanelListener.class
-/GameCompleteListener.class
+/MathProblemPanel$CaretTask.class
+/MathGameViewer$3.class
 /MathGameViewer$1.class
 /MathGameViewer$2.class

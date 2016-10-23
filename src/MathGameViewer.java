@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.TextField;
@@ -27,16 +28,15 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 
-
 /**
  * Shows the math game window, with menu, status bar, and MathGamePanel.
  * 
  * @author Bobby
  */
-public class MathGameViewer extends JFrame implements KeyListener, GameCompleteListener {
+public class MathGameViewer extends JFrame implements GameCompleteListener {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	MathGamePanel gamePanel;
 	JLabel numberCorrectLabel;
 	JLabel averageTimeLabel;
@@ -72,13 +72,14 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		add(statusPanel, BorderLayout.SOUTH);
 
 		gamePanel = new MathGamePanel();
+		gamePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 		add(gamePanel);
 
 		gamePanel.addGameCompleteListener(this);
 
 		// Creates a menu
 
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 
 		// Adds sub menus to the menu. Sets Mnemonics.
 		JMenu newGameMenu = new JMenu("New");
@@ -86,22 +87,34 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		JMenuItem newGame = new JMenuItem("New Game");
 		newGame.setAccelerator(KeyStroke.getKeyStroke("ctrl N"));
 		newGameMenu.add(newGame);
+		menuBar.add(newGameMenu);
 
 		JMenu editMenu = new JMenu("Edit");
-		editMenu.setMnemonic('E');
-
-		menuBar.add(newGameMenu);
+		JMenu gameOptions = new JMenu("Game Options");
+		editMenu.add(gameOptions);
 		menuBar.add(editMenu);
 
-		setJMenuBar(menuBar);
+		JMenuItem helpAction = new JMenuItem("Help");
+		helpAction.setAccelerator(KeyStroke.getKeyStroke("ctrl H"));
 
 		JMenuItem quitAction = new JMenuItem("Quit");
+		quitAction.setAccelerator(KeyStroke.getKeyStroke("ctrl Q"));
 
-		// Action Listener / Performer for options
+		gameOptions.add(helpAction);
+		gameOptions.add(quitAction);
 
-		quitAction.setAccelerator(KeyStroke.getKeyStroke("Q"));
-		editMenu.add(quitAction);
-
+		helpAction.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(frame,
+						"\t\tHello and welcome to Ben and Bobby's math game!"
+								+ "\n\n By clicking \"New game\" or \"ctrl N\" under the \"New\" Menu, you can customize the game in a variety of ways."
+								+ "\n\nYou can adjust the game by:" + "\nChanging the size of the grid,"
+								+ "\nChoosing a new picture to discover," + "\nUsing different math operators,"
+								+ "\nOr changing the base number in each problem."
+								+ "\n\nIf you ever wish to quit, simply click \"Quit\" or \"ctrl Q\" under \"Game Options\" on your keyboard."
+								+ "\n\nThanks for playing, we hope you have fun!");
+			}
+		});
 		quitAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
@@ -113,26 +126,27 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 				newGamePanel();
 			}
 		});
-		
+		setJMenuBar(menuBar);
+
 		setVisible(true);
 	}
 
 	/**
-	 * New Game Panel that includes 3 button groups of JRadio Buttons for user
+	 * New Game Panel that includes 4 button groups of JRadio Buttons for user
 	 * to give input.
 	 */
 	public void newGamePanel() {
 		final int numButtons = 3;
 		panel = new JPanel();
-		
+
 		ArrayList<ProblemType> newTypeAdd = new ArrayList<ProblemType>();
 		newTypeAdd.add(ProblemType.ADDITION);
 		newTypeAdd.add(ProblemType.SUBTRACTION);
-		
+
 		ArrayList<ProblemType> newTypeMult = new ArrayList<ProblemType>();
 		newTypeMult.add(ProblemType.MULTIPLICATION);
 		newTypeMult.add(ProblemType.DIVISION);
-		
+
 		ButtonGroup gridButton = new ButtonGroup();
 		ButtonGroup imageButton = new ButtonGroup();
 		ButtonGroup typeButton = new ButtonGroup();
@@ -167,8 +181,8 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		typeOption[0].setSelected(true);
 		// JSpinner for number family
 		JSpinner numFamilySpinner = new JSpinner(
-				new SpinnerNumberModel(1, 0, 12, 1));
-		
+				new SpinnerNumberModel(0, 0, 12, 1));
+
 		// List of option objects to make a vertical option pane
 		JLabel gridMessage = new JLabel("Grid Size: ");
 		JLabel imageMessage = new JLabel("Image Selection: ");
@@ -190,19 +204,19 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		// if user chose Cancel or X'd out, don't do anything else
 		if (choice != JOptionPane.OK_OPTION)
 			return;
-		
-		for(int i = 0; i < gridSizeOption.length; i++){
-			if(gridSizeOption[i].isSelected()){
+
+		for (int i = 0; i < gridSizeOption.length; i++) {
+			if (gridSizeOption[i].isSelected()) {
 				gridChoice = gridSizeOption[i].getText();
 			}
 		}
-		for(int i = 0; i < imageOption.length; i++){
-			if(imageOption[i].isSelected()){
+		for (int i = 0; i < imageOption.length; i++) {
+			if (imageOption[i].isSelected()) {
 				imageChoice = imageOption[i].getText();
 			}
 		}
-		for(int i = 0; i < typeOption.length; i++){
-			if(typeOption[i].isSelected()){
+		for (int i = 0; i < typeOption.length; i++) {
+			if (typeOption[i].isSelected()) {
 				typeChoice = typeOption[i].getText();
 			}
 		}
@@ -211,6 +225,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		imageChoice = "image"+imageChoice+".jpg";
 		int familySelect = (int)numFamilySpinner.getValue();
 		
+
 		BufferedImage imageSelect = null;
 		try {
 			imageSelect = ImageIO.read(new File(imageChoice));
@@ -242,21 +257,6 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 
 			return null;
 		}
-	}
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		// do nothing
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// do nothing
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-		// do nothing
 	}
 	
 	/**
