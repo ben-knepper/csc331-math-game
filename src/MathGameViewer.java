@@ -1,3 +1,6 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -15,10 +18,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.JOptionPane;
 import java.util.Enumeration;
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 
 
@@ -27,11 +34,14 @@ import javax.swing.ButtonGroup;
  * 
  * @author Bobby
  */
-public class MathGameViewer extends JFrame implements ActionListener, KeyListener, GameCompleteListener {
+public class MathGameViewer extends JFrame implements KeyListener, GameCompleteListener {
 
 	private static final long serialVersionUID = 1L;
 	
 	MathGamePanel gamePanel;
+	JLabel numberCorrectLabel;
+	JLabel averageTimeLabel;
+	
 	JMenuBar menuBar;
 	TextField mathText1, mathText2, mathText3, mathText4;
 	JFrame frame;
@@ -43,6 +53,19 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 	
 
 	public MathGameViewer() {
+		
+		setLayout(new BorderLayout());
+		
+		JPanel statusPanel = new JPanel();
+		statusPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		statusPanel.setLayout(new GridLayout(1, 2));
+		numberCorrectLabel = new JLabel();
+		numberCorrectLabel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 30));
+		statusPanel.add(numberCorrectLabel);
+		averageTimeLabel = new JLabel();
+		averageTimeLabel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 30));
+		statusPanel.add(averageTimeLabel);
+		add(statusPanel, BorderLayout.SOUTH);
 
 		gamePanel = new MathGamePanel();
 		add(gamePanel);
@@ -90,7 +113,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		// Creates a layer to display Math problems on
 
 		setTitle("Math Game");
-		setSize(800, 500);
+		setSize(800, 550);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
@@ -126,7 +149,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		JRadioButton[] gridSizeOption = new JRadioButton[numButtons];
 		JRadioButton[] imageOption = new JRadioButton[numButtons];
 		JRadioButton[] typeOption = new JRadioButton[2];
-		JRadioButton[] baseOption = new JRadioButton[11];
+//		JRadioButton[] baseOption = new JRadioButton[11];
 
 		Object[] optionObjects = new Object[8];
 
@@ -148,12 +171,14 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 			typeButton.add(typeOption[i]);
 		}
 		typeOption[0].setSelected(true);
-		// Radio Buttons for Base number / button group
-		for(int i = 0; i < 11; i++){
-			baseOption[i] = new JRadioButton(objectBase[i]);
-			baseButton.add(baseOption[i]);
-		}
-		baseOption[0].setSelected(true);
+//		// Radio Buttons for Base number / button group
+//		for(int i = 0; i < 11; i++){
+//			baseOption[i] = new JRadioButton(objectBase[i]);
+//			baseButton.add(baseOption[i]);
+//		}
+//		baseOption[0].setSelected(true);
+		JSpinner baseNumSpinner = new JSpinner(
+				new SpinnerNumberModel(1, 0, 12, 1));
 		
 		// List of option objects to make a vertical option pane
 		JLabel gridMessage = new JLabel("Grid Size: ");
@@ -168,7 +193,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		optionObjects[4] = typeMessage;
 		optionObjects[5] = typeOption;
 		optionObjects[6] = baseMessage;
-		optionObjects[7] = baseOption;
+		optionObjects[7] = baseNumSpinner;
 
 		int choice = JOptionPane.showConfirmDialog(
 				panel, optionObjects, "New Game", JOptionPane.OK_CANCEL_OPTION);
@@ -193,14 +218,9 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 			}
 		}
 		
-		for(int i = 0; i < baseOption.length; i++){
-			if(baseOption[i].isSelected()){
-				baseChoice = baseOption[i].getText();
-			}
-		}
 		int gridSelect = Integer.parseInt(gridChoice);
 		imageChoice = "image"+imageChoice+".jpg";
-		int baseSelect = Integer.parseInt(baseChoice);
+		int baseSelect = (int)baseNumSpinner.getValue();
 		
 		BufferedImage imageSelect = null;
 		try {
@@ -237,40 +257,33 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		// TODO Auto-generated method stub
-
+		// do nothing
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-
+		// do nothing
 	}
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-
+		// do nothing
 	}
 
 	@Override
 	public void gameCompleted(GameCompleteEvent e) {
-		// All the needed information for the game is in "e".
-		// e.getProblems() gives each problem as a String (probably won't be
-		// used)
-		// e.getResults() gives the boolean result for each problem (true =
-		// correct, false = incorrect)
-		// (which can be tallied as needed)
-		// e.getNanoTimes() gives a list of times that you can average or sum as
-		// needed
-		// (and the getTimeString method will convert it to a readable form)
-		// e.getTryCounts() gives the number of attempts for each problem
+		int numCorrect = 0;
+		for (boolean result : e.getResults())
+			if (result)
+				++numCorrect;
+		numberCorrectLabel.setText("Number correct: " + numCorrect
+				+ " out of " + e.getResults().size());
+		
+		long totalTime = 0;
+		for (long time : e.getNanoTimes())
+			totalTime += time;
+		long averageTime = totalTime / e.getNanoTimes().size();
+		averageTimeLabel.setText("Average time: " + getTimeString(averageTime));
 	}
 
 	public String getTimeString(long nanos) {
@@ -278,7 +291,7 @@ public class MathGameViewer extends JFrame implements ActionListener, KeyListene
 		long elapsedMinutes = (long) (elapsedSeconds / 60);
 		elapsedSeconds -= elapsedMinutes * 60;
 
-		return String.format("%02d:%07.4f", elapsedMinutes, elapsedSeconds);
+		return String.format("%02d:%05.2f", elapsedMinutes, elapsedSeconds);
 	}
 
 }
