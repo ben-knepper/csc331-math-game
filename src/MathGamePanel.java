@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /**
- * 
+ * Displays a grid of problem panels.
  * @author Ben
  */
 enum ProblemType
@@ -28,7 +28,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	
 	private ArrayList<ProblemType> types;
 	private int size;
-	private int baseNum;
+	private int numFamily;
 	private BufferedImage image;
 	
 	private int completeCount;
@@ -42,37 +42,22 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	private ArrayList<GameCompleteListener> gameCompleteListeners
 			= new ArrayList<GameCompleteListener>();
 	
+	/**
+	 * Initializes a MathGamePanel with no problem panels.
+	 */
 	public MathGamePanel() { }
 	/**
-	 * Initializes a MathGamePanel.
+	 * Initializes a MathGamePanel with the given parameters.
 	 * @param types The type(s) of problems to use.
 	 * @param size The number of rows and columns to have (always the same).
-	 * @param baseNum The number to use in all the calculations.
+	 * @param numFamily The number to use in all the calculations.
 	 * @param image The image to use.
 	 */
-	public MathGamePanel(ArrayList<ProblemType> types, int size, int baseNum, BufferedImage image)
+	public MathGamePanel(ArrayList<ProblemType> types, int size, int numFamily, BufferedImage image)
 	{
 		this.types = types;
 		this.size = size;
-		this.baseNum = baseNum;
-		this.image = image;
-		
-		startNewGame();
-	}
-	/**
-	 * Initializes a MathGamePanel with a single problem type.
-	 * @param type The type of problems to use.
-	 * @param size The number of rows and columns to have (always the same).
-	 * @param baseNum The number to use in all the calculations.
-	 * @param image The image to use.
-	 */
-	public MathGamePanel(ProblemType type, int size, int baseNum, BufferedImage image)
-	{
-		this.types = new ArrayList<ProblemType>();
-		types.add(type);
-		
-		this.size = size;
-		this.baseNum = baseNum;
+		this.numFamily = numFamily;
 		this.image = image;
 		
 		startNewGame();
@@ -82,9 +67,9 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 * Gets the base number for the panel problems.
 	 * @return The base number.
 	 */
-	public int getBaseNum()
+	public int getNumFamily()
 	{
-		return baseNum;
+		return numFamily;
 	}
 	/**
 	 * Gets the size (number of rows and columns) of the panel.
@@ -143,7 +128,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 		for (int i = 0; i < size * size; ++i)
 		{
 			MathProblemPanel problemPanel = new MathProblemPanel(
-					types, baseNum, subImages[i], problemPanels);
+					types, numFamily, subImages[i], problemPanels);
 			problemPanel.addProblemPanelListener(this);
 			
 			problemPanels.add(problemPanel);
@@ -164,7 +149,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 */
 	public void startNewGame(int baseNum)
 	{
-		this.baseNum = baseNum;
+		this.numFamily = baseNum;
 		
 		startNewGame();
 	}
@@ -175,7 +160,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 */
 	public void startNewGame(int baseNum, int size)
 	{
-		this.baseNum = baseNum;
+		this.numFamily = baseNum;
 		this.size = size;
 		
 		startNewGame();
@@ -188,7 +173,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image)
 	{
-		this.baseNum = baseNum;
+		this.numFamily = baseNum;
 		this.size = size;
 		this.image = image;
 		
@@ -203,7 +188,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image, ArrayList<ProblemType> types)
 	{
-		this.baseNum = baseNum;
+		this.numFamily = baseNum;
 		this.size = size;
 		this.image = image;
 		this.types = types;
@@ -219,7 +204,7 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	 */
 	public void startNewGame(int baseNum, int size, BufferedImage image, ProblemType type)
 	{
-		this.baseNum = baseNum;
+		this.numFamily = baseNum;
 		this.size = size;
 		this.image = image;
 		
@@ -269,10 +254,18 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 		return subImages;
 	}
 	
+	/**
+	 * Adds a GameCompleteListener.
+	 * @param listener The listener to add.
+	 */
 	public void addGameCompleteListener(GameCompleteListener listener)
 	{
 		gameCompleteListeners.add(listener);
 	}
+	/**
+	 * Removes a GameCompleteListener.
+	 * @param listener to remove.
+	 */
 	public void removeGameCompleteListener(GameCompleteListener listener)
 	{
 		gameCompleteListeners.remove(listener);
@@ -283,7 +276,10 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 			listener.gameCompleted(new GameCompleteEvent(this,
 					problems, results, nanoTimes, tryCounts));
 	}
-
+	
+	/**
+	 * Processes a problem panel being completed.
+	 */
 	@Override
 	public void problemCompleted(ProblemPanelEvent e)
 	{

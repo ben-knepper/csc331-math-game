@@ -15,6 +15,10 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+/**
+ * Displays a cover, problem, or image, and allows the user to answer a problem
+ * @author Ben
+ */
 public class MathProblemPanel extends JPanel implements MouseListener, KeyListener
 {
 
@@ -34,9 +38,9 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static final int NUMBER_MAX = 12;
-	public static final Color CORRECT_COLOR = new Color(32, 176, 32);
-	public static final Color INCORRECT_COLOR = Color.RED;
+	private static final int NUMBER_MAX = 12;
+	private static final Color CORRECT_COLOR = new Color(32, 176, 32);
+	private static final Color INCORRECT_COLOR = Color.RED;
 	
 	private static Random rng = new Random();
 	private Timer resultTimer = new Timer();
@@ -46,7 +50,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	private final long caretTimerInterval = 500;
 	
 	private ArrayList<ProblemType> types;
-	private int baseNum;
+	private int numFamily;
 	private Image image;
 	
 	private ArrayList<MathProblemPanel> allPanels;
@@ -67,11 +71,18 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	private long totalNanos;
 	private long startNanos;
 	
-	public MathProblemPanel(ArrayList<ProblemType> types, int baseNum, Image image,
+	/**
+	 * Creates a MathProblemPanel with the given parameters.
+	 * @param types The possible types of problems.
+	 * @param numFamily The number family.
+	 * @param image The image.
+	 * @param allPanels A list of all problem panels being used.
+	 */
+	public MathProblemPanel(ArrayList<ProblemType> types, int numFamily, Image image,
 			ArrayList<MathProblemPanel> allPanels)
 	{
 		this.types = types;
-		this.baseNum = baseNum;
+		this.numFamily = numFamily;
 		this.image = image;
 		
 		this.allPanels = allPanels;
@@ -85,11 +96,18 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		resetProblem();
 	}
 	
+	/**
+	 * Gets the problem as a String.
+	 * @return The problem.
+	 */
 	public String getProblem()
 	{
 		return problem;
 	}
 	
+	/**
+	 * Sets or resets the problem randomly using the problem type(s) and number family.
+	 */
 	public void resetProblem()
 	{
 		ProblemType type = types.get(rng.nextInt(types.size()));
@@ -107,7 +125,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				
 				sign = "+";
 				firstNum = rngNum;
-				secondNum = baseNum;
+				secondNum = numFamily;
 				
 				correctAnswer = firstNum + secondNum;
 				break;
@@ -115,14 +133,14 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				rngNum = rng.nextInt(NUMBER_MAX + 1);
 				
 				sign = "-";
-				if (rngNum > baseNum)
+				if (rngNum > numFamily)
 				{
 					firstNum = rngNum;
-					secondNum = baseNum;
+					secondNum = numFamily;
 				}
 				else
 				{
-					firstNum = baseNum;
+					firstNum = numFamily;
 					secondNum = rngNum;
 				}
 				
@@ -133,7 +151,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				
 				sign = "×";
 				firstNum = rngNum;
-				secondNum = baseNum;
+				secondNum = numFamily;
 				
 				correctAnswer = firstNum * secondNum;
 				break;
@@ -141,15 +159,15 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				rngNum = rng.nextInt(NUMBER_MAX) + 1; // can't be 0
 				
 				sign = "÷";
-				if (baseNum == 0)
+				if (numFamily == 0)
 				{
 					firstNum = 0;
 					secondNum = rngNum;
 				}
 				else
 				{
-					firstNum = baseNum * rngNum;
-					secondNum = baseNum;
+					firstNum = numFamily * rngNum;
+					secondNum = numFamily;
 				}
 				
 				correctAnswer = firstNum / secondNum;
@@ -168,11 +186,19 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		
 		repaint();
 	}
+	
+	/**
+	 * Sets the image.
+	 * @param image The image.
+	 */
 	public void setImage(Image image)
 	{
 		this.image = image;
 	}
 	
+	/**
+	 * Paints the cover, problem, or image depending on the state.
+	 */
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -195,11 +221,6 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 					fontSize = getWidth() / 8;
 				else
 					fontSize = (int)(getHeight() / 4.5);
-				
-				int width = getWidth();
-				int height = getHeight();
-				double ratio = (double)getWidth() / getHeight();
-				double testRatio = 16.0 / 9;
 				
 				g2.setFont(new Font("Courier New", Font.PLAIN, fontSize));
 				
@@ -263,18 +284,6 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 					g2.drawString(lastLine, lastLineX, lastLineY);
 				}
 				
-//				//////
-//				// TESTING
-//				double elapsedSeconds = totalNanos / 1e9;
-//				long elapsedMinutes = (long)(elapsedSeconds / 60);
-//				elapsedSeconds -= elapsedMinutes * 60;
-//				
-//				String time = String.format("%02d:%05.2f", elapsedMinutes, elapsedSeconds);
-//				
-//				g2.setColor(Color.BLACK);
-//				g2.drawString(time, 0, 20);
-//				//////
-				
 				g2.setColor(Color.BLACK);
 				g2.drawRect(0, 0, getWidth(), getHeight());
 				break;
@@ -285,24 +294,41 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				break;
 		}
 	}
-
+	
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
 		// do nothing
 	}
+	/**
+	 * Processes the cursor entering the panel.
+	 */
 	@Override
 	public void mouseEntered(MouseEvent e)
 	{
 		coverColor = Color.DARK_GRAY;
+		
+		for (MathProblemPanel panel : allPanels)
+			if (panel != this && panel.panelState == PanelState.COVER)
+			{
+				panel.coverColor = Color.GRAY;
+				panel.repaint();
+			}
+		
 		repaint();
 	}
+	/**
+	 * Processes a mouse leaving the panel.
+	 */
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
 		coverColor = Color.GRAY;
 		repaint();
 	}
+	/**
+	 * Process the mouse being pressed in the panel.
+	 */
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
@@ -338,7 +364,10 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	{
 		// do nothing
 	}
-
+	
+	/**
+	 * Processes a key being pressed.
+	 */
 	@Override
 	public void keyPressed(KeyEvent arg0)
 	{
@@ -494,10 +523,18 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		// do nothing
 	}
 	
+	/**
+	 * Adds a ProblemPanelListener.
+	 * @param listener The listener to add.
+	 */
 	public void addProblemPanelListener(ProblemPanelListener listener)
 	{
 		problemPanelListeners.add(listener);
 	}
+	/**
+	 * Removes a ProblemPanelListener.
+	 * @param listener The listener to remove.
+	 */
 	public void removeProblemPanelListener(ProblemPanelListener listener)
 	{
 		problemPanelListeners.remove(listener);

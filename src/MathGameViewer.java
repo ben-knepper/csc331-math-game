@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JOptionPane;
 import java.util.Enumeration;
@@ -49,10 +48,15 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 	String gridChoice;
 	String imageChoice;
 	String typeChoice;
-	String baseChoice;
 	
-
+	/**
+	 * Creates a MathGameViewer window
+	 */
 	public MathGameViewer() {
+
+		setTitle("Math Game");
+		setSize(800, 550);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		setLayout(new BorderLayout());
 		
@@ -109,13 +113,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 				newGamePanel();
 			}
 		});
-
-		// Creates a layer to display Math problems on
-
-		setTitle("Math Game");
-		setSize(800, 550);
-
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
 		setVisible(true);
 	}
 
@@ -138,18 +136,14 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		ButtonGroup gridButton = new ButtonGroup();
 		ButtonGroup imageButton = new ButtonGroup();
 		ButtonGroup typeButton = new ButtonGroup();
-		ButtonGroup baseButton = new ButtonGroup();
 		
 		String[] objectGridSizes = { "2", "3", "4" };
 		String[] objectImages = { "1", "2", "3" };
 		String[] objectMathType = { "ADDITION and SUBTRACTION", "MULTIPLICATION AND DIVISION" };
-		String[] objectBase = {"1", "2", "3", "4", "5", "6", "7","8","9","10","11","12"};
-		
 
 		JRadioButton[] gridSizeOption = new JRadioButton[numButtons];
 		JRadioButton[] imageOption = new JRadioButton[numButtons];
 		JRadioButton[] typeOption = new JRadioButton[2];
-//		JRadioButton[] baseOption = new JRadioButton[11];
 
 		Object[] optionObjects = new Object[8];
 
@@ -171,20 +165,15 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 			typeButton.add(typeOption[i]);
 		}
 		typeOption[0].setSelected(true);
-//		// Radio Buttons for Base number / button group
-//		for(int i = 0; i < 11; i++){
-//			baseOption[i] = new JRadioButton(objectBase[i]);
-//			baseButton.add(baseOption[i]);
-//		}
-//		baseOption[0].setSelected(true);
-		JSpinner baseNumSpinner = new JSpinner(
+		// JSpinner for number family
+		JSpinner numFamilySpinner = new JSpinner(
 				new SpinnerNumberModel(1, 0, 12, 1));
 		
 		// List of option objects to make a vertical option pane
 		JLabel gridMessage = new JLabel("Grid Size: ");
 		JLabel imageMessage = new JLabel("Image Selection: ");
 		JLabel typeMessage = new JLabel("Math Type: ");
-		JLabel baseMessage = new JLabel("Base number: ");
+		JLabel familyMessage = new JLabel("Number family: ");
 
 		optionObjects[0] = gridMessage;
 		optionObjects[1] = gridSizeOption;
@@ -192,13 +181,13 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		optionObjects[3] = imageOption;
 		optionObjects[4] = typeMessage;
 		optionObjects[5] = typeOption;
-		optionObjects[6] = baseMessage;
-		optionObjects[7] = baseNumSpinner;
+		optionObjects[6] = familyMessage;
+		optionObjects[7] = numFamilySpinner;
 
 		int choice = JOptionPane.showConfirmDialog(
 				panel, optionObjects, "New Game", JOptionPane.OK_CANCEL_OPTION);
 		
-		// if user chose Cancel or X'd out, don't do anything
+		// if user chose Cancel or X'd out, don't do anything else
 		if (choice != JOptionPane.OK_OPTION)
 			return;
 		
@@ -220,7 +209,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		
 		int gridSelect = Integer.parseInt(gridChoice);
 		imageChoice = "image"+imageChoice+".jpg";
-		int baseSelect = (int)baseNumSpinner.getValue();
+		int familySelect = (int)numFamilySpinner.getValue();
 		
 		BufferedImage imageSelect = null;
 		try {
@@ -230,14 +219,14 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		}
 		
 		if(typeChoice.equals(objectMathType[0])){
-			gamePanel.startNewGame(baseSelect, gridSelect, imageSelect, newTypeAdd);
+			gamePanel.startNewGame(familySelect, gridSelect, imageSelect, newTypeAdd);
 		}
 		if(typeChoice.equals(objectMathType[1])){
-			gamePanel.startNewGame(baseSelect, gridSelect, imageSelect, newTypeMult);
+			gamePanel.startNewGame(familySelect, gridSelect, imageSelect, newTypeMult);
 		}
 		
-
-
+		numberCorrectLabel.setText("");
+		averageTimeLabel.setText("");
 	}
 
 	public class GroupButtonUtils {
@@ -269,7 +258,10 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 	public void keyTyped(KeyEvent e) {
 		// do nothing
 	}
-
+	
+	/**
+	 * Shows the stats for the completed game.
+	 */
 	@Override
 	public void gameCompleted(GameCompleteEvent e) {
 		int numCorrect = 0;
@@ -285,8 +277,13 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		long averageTime = totalTime / e.getNanoTimes().size();
 		averageTimeLabel.setText("Average time: " + getTimeString(averageTime));
 	}
-
-	public String getTimeString(long nanos) {
+	
+	/**
+	 * Formats nanoseconds as a standard time.
+	 * @param nanos The nanoseconds as a long.
+	 * @return The String representing the time.
+	 */
+	public static String getTimeString(long nanos) {
 		double elapsedSeconds = nanos / 1e9;
 		long elapsedMinutes = (long) (elapsedSeconds / 60);
 		elapsedSeconds -= elapsedMinutes * 60;
