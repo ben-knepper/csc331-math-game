@@ -210,9 +210,9 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		{
 			case COVER:
 				g2.setColor(coverColor);
-				g2.fillRect(0, 0, getWidth(), getHeight());
+				g2.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
 				g2.setColor(Color.BLACK);
-				g2.drawRect(0, 0, getWidth(), getHeight());
+				g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 				break;
 			case PROBLEM:
 				// resize the font according the dimension smaller than the ratio 16:9
@@ -285,7 +285,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				}
 				
 				g2.setColor(Color.BLACK);
-				g2.drawRect(0, 0, getWidth(), getHeight());
+				g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 				break;
 			case IMAGE:
 				Image img = image.getScaledInstance(getWidth(), getHeight(),
@@ -336,7 +336,8 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 		{
 			for (MathProblemPanel panel : allPanels)
 			{
-				if (panel.panelState == PanelState.PROBLEM)
+				if (panel.panelState == PanelState.PROBLEM
+						&& panel.problemState != ProblemState.INCORRECT_FINAL)
 				{
 					long currentNanos = System.nanoTime();
 					long elapsedNanos = currentNanos - panel.startNanos;
@@ -371,7 +372,8 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	@Override
 	public void keyPressed(KeyEvent arg0)
 	{
-		if (panelState == PanelState.PROBLEM)
+		if (panelState == PanelState.PROBLEM
+				&& problemState != ProblemState.INCORRECT_FINAL)
 		{
 			// if the key was backspace and the answer is not empty
 			if (arg0.getKeyCode() == KeyEvent.VK_BACK_SPACE
@@ -428,26 +430,18 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 				{
 					totalNanos += System.nanoTime() - startNanos;
 					
-					if (tries == 3)
+					if (tries >= 2)
 					{
 						problemState = ProblemState.INCORRECT_FINAL;
 						
-						resultTimer.schedule(new TimerTask()
+						answer = answer.replace(" ", "_");
+						
+						// restore input
+						for (MathProblemPanel panel : allPanels)
 						{
-							@Override
-							public void run()
-							{
-								panelState = PanelState.IMAGE;
-								repaint();
-								
-								// restore input
-								for (MathProblemPanel panel : allPanels)
-								{
-									panel.addMouseListener(panel);
-									panel.addKeyListener(panel);
-								}
-							}
-						}, 2000);
+							panel.addMouseListener(panel);
+							panel.addKeyListener(panel);
+						}
 						
 						for (ProblemPanelListener listener : problemPanelListeners)
 							listener.problemCompleted(new ProblemPanelEvent(this, false, tries, totalNanos));
@@ -565,7 +559,8 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 			}
 
 			// start the timer again if the problem is still showing
-			if (panelState == PanelState.PROBLEM)
+			if (panelState == PanelState.PROBLEM
+					&& problemState != ProblemState.INCORRECT_FINAL)
 				caretTimer.schedule(new CaretTask(), caretTimerInterval);
 		}
 	}
