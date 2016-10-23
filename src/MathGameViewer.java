@@ -160,7 +160,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		JRadioButton[] gridSizeOption = new JRadioButton[numButtons];
 		JRadioButton[] imageOption = new JRadioButton[numButtons];
 		JRadioButton[] typeOption = new JRadioButton[2];
-//		JRadioButton[] baseOption = new JRadioButton[11];
+		JRadioButton[] baseOption = new JRadioButton[11];
 
 		Object[] optionObjects = new Object[8];
 
@@ -183,19 +183,19 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		}
 		typeOption[0].setSelected(true);
 		// Radio Buttons for Base number / button group
-		for (int i = 0; i < 11; i++) {
+		for (int i = 0; i < objectBase.length; i++) {
 			baseOption[i] = new JRadioButton(objectBase[i]);
 			baseButton.add(baseOption[i]);
 		}
 		baseOption[0].setSelected(true);
+	
 
-
-//		// Radio Buttons for Base number / button group
-//		for(int i = 0; i < 11; i++){
-//			baseOption[i] = new JRadioButton(objectBase[i]);
-//			baseButton.add(baseOption[i]);
-//		}
-//		baseOption[0].setSelected(true);
+		// Radio Buttons for Base number / button group
+		for(int i = 0; i < 11; i++){
+			baseOption[i] = new JRadioButton(objectBase[i]);
+			baseButton.add(baseOption[i]);
+		}
+		baseOption[0].setSelected(true);
 		JSpinner baseNumSpinner = new JSpinner(
 				new SpinnerNumberModel(1, 0, 12, 1));
 		
@@ -245,12 +245,6 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		}
 		int gridSelect = Integer.parseInt(gridChoice);
 		imageChoice = "image" + imageChoice + ".jpg";
-		int baseSelect = Integer.parseInt(baseChoice);
-
-
-		
-		int gridSelect = Integer.parseInt(gridChoice);
-		imageChoice = "image"+imageChoice+".jpg";
 		int baseSelect = (int)baseNumSpinner.getValue();
 		
 
@@ -302,13 +296,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
 
-
-		// do nothing
-
-	}
 
 	@Override
 	public void gameCompleted(GameCompleteEvent e) {
