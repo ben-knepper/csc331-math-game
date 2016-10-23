@@ -43,7 +43,7 @@ public class MathProblemPanel extends JPanel implements MouseListener, KeyListen
 	private int caretIndex;
 	private char currentCaret;
 	private Timer caretTimer = new Timer();
-	private final long caretTimerInterval = 700;
+	private final long caretTimerInterval = 500;
 	
 	private ArrayList<ProblemType> types;
 	private int baseNum;

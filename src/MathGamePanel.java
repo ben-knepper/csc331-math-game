@@ -110,6 +110,16 @@ public class MathGamePanel extends JPanel implements ProblemPanelListener
 	{
 		return image;
 	}
+	/**
+	 * Sets the image of the panel.
+	 * @param image The image.
+	 */
+	public void setimage(BufferedImage image)
+	{
+		BufferedImage[] subImages = splitImage();
+		for (int i = 0; i < problemPanels.size(); ++i)
+			problemPanels.get(i).setImage(subImages[i]);
+	}
 	public int getPanelCount()
 	{
 		return size * size;
