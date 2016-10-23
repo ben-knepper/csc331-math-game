@@ -183,7 +183,7 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 		}
 		typeOption[0].setSelected(true);
 		// Radio Buttons for Base number / button group
-		for (int i = 0; i < objectBase.length; i++) {
+		for (int i = 0; i < 11; i++) {
 			baseOption[i] = new JRadioButton(objectBase[i]);
 			baseButton.add(baseOption[i]);
 		}
@@ -296,7 +296,12 @@ public class MathGameViewer extends JFrame implements KeyListener, GameCompleteL
 
 	}
 
+	public void actionPerformed(ActionEvent e) {
 
+
+		// do nothing
+
+	}
 
 	@Override
 	public void gameCompleted(GameCompleteEvent e) {
